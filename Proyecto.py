@@ -1,22 +1,50 @@
-# Repositorio de GitHub: https://github.com/rafartn/Proyecto_TC1038
+'''Repositorio de GitHub: https://github.com/rafartn/Proyecto_TC1038
+En este código no se implementan listas de listas
+Sin embargo, se utiliza un dataframe de pandas, que resulta mucho más conveniente,
+ya que permite implementar de mejor manera el almacenamiento de datos por medio de un csv'''
 
 import pandas as pd
+from datetime import datetime
 
-mapas=["Abyss", "Ascent", "Bind", "Breeze", "Corrode", "Haven", "Icebox", "Lotus", "Pearl", "Split", "Sunset", "Fracture"]
-agentes=["Brimstone", "Viper", "Omen", "Sova", "Sage", "Phoenix", "Raze", "Cypher", "Jett", "Reyna", "Killjoy", "Breach", "Fade", "Chamber", "Neon", "Kay/o", "Yoru", "Astra", "Harbor", "Gekko", "Deadlock", "Iso", "Clove", "Vyse", "Waylay", "Tejo", "Miks"]
+AHORA=datetime.now()
+MAPAS=("Abyss", "Ascent", "Bind", "Breeze", "Corrode", "Haven", "Icebox", "Lotus", "Pearl", "Split", "Sunset", "Fracture")
+AGENTES=("Brimstone", "Viper", "Omen", "Sova", "Sage", "Phoenix", "Raze", "Cypher", "Jett", "Reyna", "Killjoy", "Breach", "Fade", "Chamber", "Neon", "Kay/o", "Yoru", "Astra", "Harbor", "Gekko", "Deadlock", "Iso", "Clove", "Vyse", "Waylay", "Tejo", "Miks", "Hush")
 columnas=['fecha','mapa', 'agente', 'bajas', 'muertes', 'asistencias', 'rondas', 'resultado']
 
-def verificar_fecha(fecha, df):
-    #Esta función verifica que la fecha sea de un formato adecuado
-    #Le adjunta la fecha a la lista si es de formato adecuado e indica si no lo es
-    #Regresa si la fecha es válida y la lista a adjuntar al csv
-    #Por ahora solo agrega "fecha" a la lista e indica formato adecuado para continuar el ciclo y no romper el programa
-    df.append("fecha")
-    print("Aquí se verificará el formato de la fecha")
-    return True, df
+def verificar_fecha(fecha, lista):
+    '''Esta función verifica que la fecha sea de un formato adecuado
+    Le adjunta la fecha a la lista si es de formato adecuado e indica si no lo es
+    Regresa si la fecha es válida y la lista a adjuntar al csv
+    Esta es una nueva funcionalidad con respecto al avance 2,
+    incluye el uso de funciones de manejo de cadenas vistas en clase como join(), split() o replace()'''
+    espacios=False
+    flag=True
+    #Primero se quitan los espacios de la fecha
+    fecha=fecha.replace(" ", "")
+    #Luego se verifica que hayan números o divisores en la fecha
+    for c in fecha:
+        if c not in ("1234567890/"):
+            flag=False
+    #Se divide después según el divisor
+    fecha=fecha.split("/")
+    #Se verifican varios lineamientos
+    try:
+        if len(fecha) != 3:
+            flag=False
+        # Permitiremos registrar años de partidas pasadas, pero no antes de la sálida del juego Valorant, que fue en 2020
+        elif int(fecha[0]) not in range(1, 32) or int(fecha[1]) not in range (1, 13) or int(fecha[2]) not in range(2020, AHORA.year+1):
+            flag=False
+    except:
+        flag=False
+    if flag:
+        fecha="/".join(fecha)
+        lista.append(fecha)
+    else:
+        print("La fecha ingresada no es válida")
+    return flag, lista
 
-#Función que verifica que exista el archivo csv y lo crea en caso de que no
-#El programa se desarrolla en un csv para que sea posible guardar los datos incluso cuando el código se termina
+'''Función que verifica que exista el archivo csv y lo crea en caso de que no
+El programa se desarrolla en un csv para que sea posible guardar los datos incluso cuando el código se termina'''
 def verificar_csv():
     try:
         datos=pd.read_csv(r"datos_proyecto.csv")
@@ -52,13 +80,13 @@ def registro():
     lista1=[]
     fecha_verify=False
     while not fecha_verify:
-        fecha=input("Ingrese la fecha del registro: ")
+        fecha=input("Ingrese la fecha del registro, el formato requerido es DD/MM/AAAA (incluya las barras diagonales) : ")
         fecha_verify, lista1=verificar_fecha(fecha, lista1)
 
 
     while True:
         mapa=input("Ingrese el mapa de la partida: ").capitalize()
-        if mapa in mapas:
+        if mapa in MAPAS:
             lista1.append(mapa)
             break
         else:
@@ -66,7 +94,7 @@ def registro():
 
     while True:
         agente=input("Ingrese el agente de la partida sin usar mayúsculas: ").capitalize()
-        if agente in agentes:
+        if agente in AGENTES:
             lista1.append(agente)
             break
         else:
@@ -141,7 +169,7 @@ def calculo_estadisticas(df):
 def analizar_kd_mapa(df):
     kd_mapa_max_num = 0
     kd_mapa_max = []
-    for mapa in mapas:
+    for mapa in MAPAS:
         bajas_totales_mapa=df[df['mapa'] == mapa]['bajas'].sum()
         muertes_totales_mapa = df[df['mapa'] == mapa]['muertes'].sum()
         partidas_totales_mapa = df[df['mapa'] == mapa]['agente'].count()
@@ -168,7 +196,7 @@ def analizar_kd_mapa(df):
 def analizar_kd_agente(df):
     kd_agente_max_num = 0
     kd_agente_max = []
-    for agente in agentes:
+    for agente in AGENTES:
         bajas_totales_agente=df[df['agente'] == agente]['bajas'].sum()
         muertes_totales_agente = df[df['agente'] == agente]['muertes'].sum()
         partidas_totales_agente = df[df['agente'] == agente]['agente'].count()
@@ -194,7 +222,7 @@ def analizar_kd_agente(df):
 def analizar_wr_mapa(df):
     wr_mapa_max_num = 0
     wr_mapa_max = []
-    for mapa in mapas:
+    for mapa in MAPAS:
         victorias_totales_mapa=df[df['mapa'] == mapa]['resultado'].sum()
         partidas_totales_mapa = df[df['mapa'] == mapa]['agente'].count()
 
@@ -217,7 +245,7 @@ def analizar_wr_mapa(df):
 def analizar_wr_agente(df):
     wr_agente_max_num = 0
     wr_agente_max = []
-    for agente in agentes:
+    for agente in AGENTES:
         victorias_totales_agente=df[df['agente'] == agente]['resultado'].sum()
         partidas_totales_agente = df[df['agente'] == agente]['agente'].count()
 
@@ -270,19 +298,22 @@ def main():
     #Después, se mantiene un ciclo en donde se muestra el menú hasta que se selecciona la opción de terminar el código
     choice="inicio"
     print("Este programa tiene como objetivo ayudarte a analizar el rendimiento en tus partidas de Valorant")
-    while choice != "salir" and choice != 4:
-        print("\nTienes 4 opciones")
+    while choice != "salir" and choice != 6:
+        print("\nTienes 6 opciones")
         print("1. Registrar partida")
         print("2. Ver estadísticas")
         print("3. Analizar rendimiento")
-        print("4. Salir")
+        #Con el propósito de añadir la función enumerate al código, se incluyeron funciones para mostrar todos los agentes o mapas disponibles
+        #Éstas son nuevas funcionalidades con respecto al avance 2, muestran con un for que recorre listas todos los agentes y mapas válidos a incluir
+        print("4. Revisar lista de agentes")
+        print("5. Revisar lista de mapas")
+        print("6. Salir")
         choice=int(input("\nElige la opción que requieras seleccionando el número que le corresponda: "))
 
         match choice:
             case 1:
                 registro()
                 datos = verificar_csv()
-                print(datos)
 
             #Tanto en la opción 2 como en la opción 3,
             #antes de ejecutar la instrucción, se evalúa que haya partidas que analizar
@@ -292,12 +323,21 @@ def main():
                 if datos['agente'].count()==0:
                     print("No hay partidas que analizar")
                 else:
-                    calculo_estadisticas(datos)
+                    calculo_estadisticas(datos) #Se llama la función para calcular
             case 3:
                 datos=verificar_csv()
                 if datos['agente'].count()==0:
                     print("No hay partidas que analizar")
                 else:
                     analisis_rendimiento(datos)
-
+            case 4:
+                print("AGENTES")
+                print("-----------------------------------")
+                for i, agente in enumerate(AGENTES):
+                    print(f"{i}: {agente}")
+            case 5:
+                print("MAPAS")
+                print("-----------------------------------")
+                for i, mapa in enumerate(MAPAS):
+                    print(f"{i}: {mapa}")
 main()
